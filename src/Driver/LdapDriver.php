@@ -2,7 +2,7 @@
 
 namespace Securilex\Driver;
 
-use Symfony\Component\Ldap\LdapClient;
+use Symfony\Component\Ldap\Ldap;
 use Symfony\Component\Security\Core\Authentication\Provider\LdapBindAuthenticationProvider;
 use Symfony\Component\Security\Core\User\InMemoryUserProvider;
 use Symfony\Component\Security\Core\User\User;
@@ -17,7 +17,7 @@ class LdapDriver extends BaseDriver
 
     /**
      *
-     * @var \Symfony\Component\Ldap\LdapClientInterface
+     * @var \Symfony\Component\Ldap\LdapInterface
      */
     protected $ldapClient;
 
@@ -36,7 +36,8 @@ class LdapDriver extends BaseDriver
     public function __construct($host, $port, $dnString)
     {
         $this->userProvider = new InMemoryUserProvider();
-        $this->ldapClient   = new LdapClient($host, $port);
+        $this->ldapClient   = Ldap::create('ext_ldap',
+                array('host' => $host, 'port' => $port, 'version' => 3));
         $this->dnString     = $dnString;
     }
 
