@@ -14,18 +14,31 @@ class Firewall
     protected $drivers       = array();
     protected $userProviders = array();
     protected $loginpath     = null;
+    protected $logincheck    = null;
     protected $name          = null;
 
+    /**
+     *
+     * @var ServiceProvider
+     */
+    protected $provider = null;
+
     public function __construct($path, DriverInterface $driver,
-                                $loginpath = null)
+                                $loginpath = null, $logincheck = null)
     {
         if (substr($path, -1) != '/') {
             $path .= '/';
         }
-        $this->path      = $path;
-        $this->loginpath = $loginpath;
-        $this->name      = $this->path;
+        $this->path       = $path;
+        $this->loginpath  = $loginpath;
+        $this->logincheck = $logincheck;
+        $this->name       = md5($this->path);
         $this->addDriver($driver);
+    }
+
+    public function getPath()
+    {
+        return $this->path;
     }
 
     public function addDriver(DriverInterface $driver)
@@ -35,6 +48,10 @@ class Firewall
         if (($userProvider = $driver->getBuiltInUserProvider())) {
             $this->addUserProvider($userProvider);
         }
+
+        if ($this->provider) {
+            $driver->register($this->provider->getApp());
+        }
     }
 
     public function addUserProvider(UserProviderInterface $userProvider)
@@ -42,27 +59,30 @@ class Firewall
         $this->userProviders[] = $userProvider;
     }
 
-    public function getName()
-    {
-        return $this->name;
-    }
-
     /**
      * Register the Firewall
-     * @param \Silex\Application $app
+     * @param ServiceProvider $provider Service Provider
      */
-    public function register(\Silex\Application $app, array &$firewallConfig)
+    public function register(ServiceProvider $provider)
     {
+        $this->provider = $provider;
+
+        if ($this->loginpath) {
+            $this->provider->prependFirewallConfig("{$this->name}_login",
+                array('pattern' => "^{$this->loginpath}$"));
+        }
+
         $config = array(
             'logout' => true,
         );
 
+        $app = $this->provider->getApp();
         foreach ($this->drivers as $driver) {
             $driver->register($app);
             if ($this->loginpath) {
                 $config[$driver->getId()] = array(
                     'login_path' => $this->loginpath,
-                    'check_path' => $this->loginpath.'/doLogin',
+                    'check_path' => $this->logincheck,
                 );
             } else {
                 $config[$driver->getId()] = array();
@@ -73,13 +93,7 @@ class Firewall
         $this->registerContextListener($app);
         $this->registerEntryPoint($app);
 
-        if ($this->loginpath) {
-            $firewallConfig = array_merge(
-                array("{$this->name}_login" => array('pattern' => "^{$this->loginpath}$")),
-                $firewallConfig);
-        }
-
-        $firewallConfig[$this->name] = $config;
+        $this->provider->appendFirewallConfig($this->name, $config);
     }
 
     /**
