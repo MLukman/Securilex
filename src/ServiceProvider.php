@@ -25,12 +25,23 @@ class ServiceProvider extends \Silex\Provider\SecurityServiceProvider
     public function register(\Silex\Application $app)
     {
         parent::register($app);
-        $this->app = $app;
 
+        // Register SecuredAccessVoter
+        $app->extend('security.voters',
+            function($voters) {
+            $voters[] = new Authorization\SecuredAccessVoter();
+            return $voters;
+        });
+
+        // Register firewalls
+        $this->app = $app;
         foreach ($this->firewalls as $firewall) {
             $firewall->register($this);
         }
         $this->refreshFirewallConfig();
+
+        // Add reference to this in application instance
+        $this->app['securilex'] = $this;
     }
 
     /**
