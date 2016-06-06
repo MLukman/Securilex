@@ -2,6 +2,7 @@
 
 namespace Securilex;
 
+use Securilex\Authentication\AuthenticationFactoryInterface;
 use Symfony\Component\Security\Core\User\ChainUserProvider;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\EntryPoint\BasicAuthenticationEntryPoint;
@@ -13,6 +14,7 @@ class Firewall
     protected $path          = null;
     protected $drivers       = array();
     protected $userProviders = array();
+    protected $authFactories = array();
     protected $loginpath     = null;
     protected $logincheck    = null;
     protected $name          = null;
@@ -23,7 +25,9 @@ class Firewall
      */
     protected $provider = null;
 
-    public function __construct($path, DriverInterface $driver,
+    public function __construct($path,
+                                AuthenticationFactoryInterface $authFactory,
+                                UserProviderInterface $userProvider,
                                 $loginpath = null, $logincheck = null)
     {
         if (substr($path, -1) != '/') {
@@ -33,7 +37,7 @@ class Firewall
         $this->loginpath  = $loginpath;
         $this->logincheck = $logincheck;
         $this->name       = md5($this->path);
-        $this->addDriver($driver);
+        $this->addAuthenticationFactory($authFactory, $userProvider);
     }
 
     public function getPath()
@@ -41,22 +45,22 @@ class Firewall
         return $this->path;
     }
 
-    public function addDriver(DriverInterface $driver)
+    public function addAuthenticationFactory(AuthenticationFactoryInterface $authFactory,
+                                             UserProviderInterface $userProvider)
     {
-        $this->drivers[(string) $driver->getId()] = $driver;
+        $id = $authFactory->getId();
 
-        if (($userProvider = $driver->getBuiltInUserProvider())) {
-            $this->addUserProvider($userProvider);
-        }
+        $this->authFactories[$id] = array(
+            'factory' => $authFactory,
+            'userProvider' => $userProvider,
+        );
+
+        $this->userProviders[] = $userProvider;
 
         if ($this->provider) {
-            $driver->register($this->provider->getApp());
+            $this->registerAuthenticationFactory($this->provider->getApp(), $id,
+                $authFactory, $userProvider);
         }
-    }
-
-    public function addUserProvider(UserProviderInterface $userProvider)
-    {
-        $this->userProviders[] = $userProvider;
     }
 
     /**
@@ -72,20 +76,16 @@ class Firewall
                 array('pattern' => "^{$this->loginpath}$"));
         }
 
-        $config = array(
-            'logout' => true,
-        );
+        $config = array('logout' => true);
 
         $app = $this->provider->getApp();
-        foreach ($this->drivers as $driver) {
-            $driver->register($app);
+        foreach ($this->authFactories as $id => $authFactory) {
+            $this->registerAuthenticationFactory($app, $id,
+                $authFactory['factory'], $authFactory['userProvider']);
+            $config[$id] = array();
             if ($this->loginpath) {
-                $config[$driver->getId()] = array(
-                    'login_path' => $this->loginpath,
-                    'check_path' => $this->logincheck,
-                );
-            } else {
-                $config[$driver->getId()] = array();
+                $config[$id]['login_path'] = $this->loginpath;
+                $config[$id]['check_path'] = $this->logincheck;
             }
         }
 
@@ -94,6 +94,37 @@ class Firewall
         $this->registerEntryPoint($app);
 
         $this->provider->appendFirewallConfig($this->name, $config);
+    }
+
+    protected function registerAuthenticationFactory(\Silex\Application $app,
+                                                     $id,
+                                                     AuthenticationFactoryInterface $authFactory,
+                                                     UserProviderInterface $userProvider)
+    {
+        $fac = 'security.authentication_listener.factory.'.$id;
+        if (isset($app[$fac])) {
+            return;
+        }
+
+        $app[$fac] = $app->protect(function ($name, $options) use ($app, $id, $authFactory, $userProvider) {
+            // the authentication type
+            $type        = (isset($options['login_path']) ? 'form' : 'http');
+            $entry_point = "security.entry_point.$name.$type";
+
+            // the authentication provider id
+            $auth_provider       = "security.authentication_provider.$name.$id";
+            $app[$auth_provider] = $app->share(function () use ($app, $name, $authFactory, $userProvider) {
+                return $authFactory->createAuthenticationProvider($app,
+                        $userProvider, $name);
+            });
+
+            // the authentication listener id
+            $auth_listener       = "security.authentication_listener.$name.$id";
+            $app[$auth_listener] = $app["security.authentication_listener.$type._proto"]($name,
+                $options);
+
+            return array($auth_provider, $auth_listener, $entry_point, 'pre_auth');
+        });
     }
 
     /**

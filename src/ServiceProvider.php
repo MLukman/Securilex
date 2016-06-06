@@ -2,6 +2,8 @@
 
 namespace Securilex;
 
+use Securilex\Authorization\SecuredAccessVoter;
+
 class ServiceProvider extends \Silex\Provider\SecurityServiceProvider
 {
     /**
@@ -29,7 +31,7 @@ class ServiceProvider extends \Silex\Provider\SecurityServiceProvider
         // Register SecuredAccessVoter
         $app->extend('security.voters',
             function($voters) {
-            $voters[] = new Authorization\SecuredAccessVoter();
+            $voters[] = new SecuredAccessVoter();
             return $voters;
         });
 
@@ -46,7 +48,7 @@ class ServiceProvider extends \Silex\Provider\SecurityServiceProvider
 
     /**
      * Add Firewall
-     * @param \Securilex\Firewall $firewall
+     * @param Firewall $firewall
      */
     public function addFirewall(Firewall $firewall)
     {
