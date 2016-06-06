@@ -2,9 +2,9 @@
 
 namespace Securilex\Authentication\User;
 
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
-interface MutableUserInterface extends AdvancedUserInterface
+interface MutableUserInterface extends UserInterface
 {
 
     public function setPassword($password);
