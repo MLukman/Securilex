@@ -1,4 +1,15 @@
 <?php
+/**
+ * This file is part of the Securilex library for Silex framework.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Securilex\Authentication\Factory
+ * @author Muhammad Lukman Nasaruddin <anatilmizun@gmail.com>
+ * @link https://github.com/MLukman/Securilex Securilex Github
+ * @link https://packagist.org/packages/mlukman/securilex Securilex Packagist
+ */
 
 namespace Securilex\Authentication\Factory;
 
@@ -14,9 +25,17 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
- * InitializableAuthenticationProvider allows initializing a user with the current password
+ * InitializableAuthenticationFactory allows initializing a user with the current password
  * when the password associated with the user matched with a specific string.
- * Important: this authentication factory requires user provider to implements MutableUserProviderInterface.
+ *
+ * This is useful for implementing an authentication system that remembers the first password
+ * that a user enters after registration or password-reset.
+ * 
+ * Important: this authentication factory requires a user provider that implements
+ * MutableUserProviderInterface and provides user objects that implements
+ * MutableUserInterface.
+ * @see MutableUserProviderInterface
+ * @see MutableUserInterface
  */
 class InitializableAuthenticationFactory implements AuthenticationFactoryInterface,
     SimpleAuthenticatorInterface
@@ -26,9 +45,25 @@ class InitializableAuthenticationFactory implements AuthenticationFactoryInterfa
      * @var string
      */
     protected $id;
+
+    /**
+     * The initial password
+     * @var string
+     */
     protected $initPassword;
+
+    /**
+     * The password encoder
+     * @var PasswordEncoderInterface
+     */
     protected $passwordEncoder;
 
+    /**
+     * Construct an instance.
+     * @staticvar int $instanceId
+     * @param PasswordEncoderInterface $passwordEncoder The password encoder
+     * @param string $initPassword The initial password
+     */
     public function __construct(PasswordEncoderInterface $passwordEncoder,
                                 $initPassword = '')
     {
@@ -39,7 +74,11 @@ class InitializableAuthenticationFactory implements AuthenticationFactoryInterfa
     }
 
     /**
-     * {@inheritdoc}
+     * Create Authentication Provider instance.
+     * @param \Silex\Application $app
+     * @param UserProviderInterface $userProvider
+     * @param string $providerKey
+     * @return SimpleAuthenticationProvider
      */
     public function createAuthenticationProvider(\Silex\Application $app,
                                                  UserProviderInterface $userProvider,
@@ -55,7 +94,8 @@ class InitializableAuthenticationFactory implements AuthenticationFactoryInterfa
     }
 
     /**
-     * {@inheritdoc}
+     * Get the unique id of this instance of authentication factory.
+     * @return string
      */
     public function getId()
     {
@@ -66,7 +106,7 @@ class InitializableAuthenticationFactory implements AuthenticationFactoryInterfa
      * Attempt to authenticate the provided token using the provided user provider.
      * @param TokenInterface $token
      * @param UserProviderInterface $userProvider
-     * @param type $providerKey
+     * @param string $providerKey
      * @return UsernamePasswordToken
      * @throws BadCredentialsException
      */
@@ -102,7 +142,7 @@ class InitializableAuthenticationFactory implements AuthenticationFactoryInterfa
     /**
      * Determine if this instance supports the provided token.
      * @param TokenInterface $token
-     * @param type $providerKey
+     * @param string $providerKey
      * @return type
      */
     public function supportsToken(TokenInterface $token, $providerKey)

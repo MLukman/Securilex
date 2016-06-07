@@ -1,4 +1,15 @@
 <?php
+/**
+ * This file is part of the Securilex library for Silex framework.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Securilex\Authentication\Factory
+ * @author Muhammad Lukman Nasaruddin <anatilmizun@gmail.com>
+ * @link https://github.com/MLukman/Securilex Securilex Github
+ * @link https://packagist.org/packages/mlukman/securilex Securilex Packagist
+ */
 
 namespace Securilex\Authentication\Factory;
 
@@ -10,6 +21,11 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
+/**
+ * LdapBindAuthenticationFactory creates instances of SimpleAuthenticationProvider that
+ * authenticates plain text user password
+ * using information from an instance of \Silex\Application, UserProviderInterface and a provider key
+ */
 class PlaintextPasswordAuthenticationFactory implements AuthenticationFactoryInterface,
     SimpleAuthenticatorInterface
 {
@@ -30,7 +46,11 @@ class PlaintextPasswordAuthenticationFactory implements AuthenticationFactoryInt
     }
 
     /**
-     * {@inheritdoc}
+     * Create Authentication Provider instance.
+     * @param \Silex\Application $app
+     * @param UserProviderInterface $userProvider
+     * @param string $providerKey
+     * @return SimpleAuthenticationProvider
      */
     public function createAuthenticationProvider(\Silex\Application $app,
                                                  UserProviderInterface $userProvider,
@@ -41,7 +61,8 @@ class PlaintextPasswordAuthenticationFactory implements AuthenticationFactoryInt
     }
 
     /**
-     * {@inheritdoc}
+     * Get the unique id of this instance of authentication factory.
+     * @return string
      */
     public function getId()
     {
@@ -52,7 +73,7 @@ class PlaintextPasswordAuthenticationFactory implements AuthenticationFactoryInt
      * Attempt to authenticate the provided token using the provided user provider.
      * @param TokenInterface $token
      * @param UserProviderInterface $userProvider
-     * @param type $providerKey
+     * @param string $providerKey
      * @return UsernamePasswordToken
      * @throws BadCredentialsException
      */
@@ -72,7 +93,7 @@ class PlaintextPasswordAuthenticationFactory implements AuthenticationFactoryInt
     /**
      * Determine if this instance supports the provided token.
      * @param TokenInterface $token
-     * @param type $providerKey
+     * @param string $providerKey
      * @return type
      */
     public function supportsToken(TokenInterface $token, $providerKey)

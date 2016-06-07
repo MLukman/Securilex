@@ -1,7 +1,21 @@
 <?php
+/**
+ * This file is part of the Securilex library for Silex framework.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Securilex\Authorization
+ * @author Muhammad Lukman Nasaruddin <anatilmizun@gmail.com>
+ * @link https://github.com/MLukman/Securilex Securilex Github
+ * @link https://packagist.org/packages/mlukman/securilex Securilex Packagist
+ */
 
 namespace Securilex\Authorization;
 
+/**
+ * SecuredAccessTrait implements methods needed by SecuredAccessInterface
+ */
 trait SecuredAccessTrait
 {
     /**
@@ -79,6 +93,7 @@ trait SecuredAccessTrait
     /**
      * Check if current user/instance has access to this object
      * @param \Silex\Application $app The application instance to evaluate on
+     * @param string $attribute Attribute
      * @return boolean if current user has access
      */
     public function checkAccess(\Silex\Application $app, $attribute = 'access')

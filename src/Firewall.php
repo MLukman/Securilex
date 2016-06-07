@@ -1,4 +1,15 @@
 <?php
+/**
+ * This file is part of the Securilex library for Silex framework.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Securilex
+ * @author Muhammad Lukman Nasaruddin <anatilmizun@gmail.com>
+ * @link https://github.com/MLukman/Securilex Securilex Github
+ * @link https://packagist.org/packages/mlukman/securilex Securilex Packagist
+ */
 
 namespace Securilex;
 
@@ -9,42 +20,139 @@ use Symfony\Component\Security\Http\EntryPoint\BasicAuthenticationEntryPoint;
 use Symfony\Component\Security\Http\EntryPoint\FormAuthenticationEntryPoint;
 use Symfony\Component\Security\Http\Firewall\ContextListener;
 
+/**
+ * Firewall holds configurations on a secured area of your application and
+ * the authentication mechanism to allow user to login.
+ */
 class Firewall
 {
-    protected $path          = null;
-    protected $drivers       = array();
-    protected $userProviders = array();
-    protected $authFactories = array();
-    protected $loginpath     = null;
-    protected $logincheck    = null;
-    protected $name          = null;
+    /**
+     * The patterns (or simple path) to firewall
+     * @var string[]
+     */
+    protected $patterns = array();
 
     /**
-     *
+     * The list of user providers
+     * @var UserProviderInterface[]
+     */
+    protected $userProviders = array();
+
+    /**
+     * The list of authentication factories
+     * @var array
+     */
+    protected $authFactories = array();
+
+    /**
+     * The path to access login form
+     * @var string
+     */
+    protected $loginPath = null;
+
+    /**
+     * The path to perform checking of user login
+     * @var string
+     */
+    protected $loginCheckPath = null;
+
+    /**
+     * The path to trigger user logout
+     * @var string
+     */
+    protected $logoutPath = null;
+
+    /**
+     * The name of this firewall instance
+     * @var string
+     */
+    protected $name = null;
+
+    /**
+     * The Securilex service provider that registers this firewall. Remain null until this firewall is registered.
      * @var ServiceProvider
      */
     protected $provider = null;
 
-    public function __construct($path,
+    /**
+     * Construct firewall instance.
+     * @param array|string $patterns
+     * @param AuthenticationFactoryInterface $authFactory
+     * @param UserProviderInterface $userProvider
+     * @param string $loginPath
+     * @param string $loginCheckPath
+     */
+    public function __construct($patterns,
                                 AuthenticationFactoryInterface $authFactory,
                                 UserProviderInterface $userProvider,
-                                $loginpath = null, $logincheck = null)
+                                $loginPath = null)
     {
-        if (substr($path, -1) != '/') {
-            $path .= '/';
+        if (!is_array($patterns)) {
+            $patterns = array($patterns);
         }
-        $this->path       = $path;
-        $this->loginpath  = $loginpath;
-        $this->logincheck = $logincheck;
-        $this->name       = md5($this->path);
+        foreach ($patterns as &$pattern) {
+            if (substr($pattern, 0, 1) != '^') {
+                $pattern = '^'.$pattern;
+            }
+        }
+        $this->patterns  = $patterns;
+        $this->loginPath = $loginPath;
+        $this->name      = md5(json_encode($this->patterns));
+
+        // generate paths
+        $this->generatePaths();
+
+        // register authentication factory
         $this->addAuthenticationFactory($authFactory, $userProvider);
     }
 
-    public function getPath()
+    /**
+     * Get the generated name of this firewall
+     * @return string
+     */
+    public function getName()
     {
-        return $this->path;
+        return $this->name;
     }
 
+    /**
+     * Check if the provided path is covered by this firewall or not
+     * @param string $path
+     * @return boolean
+     */
+    public function isPathCovered($path)
+    {
+        foreach ($this->patterns as $pattern) {
+            if (1 === preg_match('{'.$pattern.'}', $path)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get login check path.
+     * @return string
+     */
+    public function getLoginCheckPath()
+    {
+        return $this->loginCheckPath;
+    }
+
+    /**
+     * Get logout path.
+     * @return string
+     */
+    public function getLogoutPath()
+    {
+        return $this->logoutPath;
+    }
+
+    /**
+     * Add additional authentication factory and corresponding user provider.
+     * @param AuthenticationFactoryInterface $authFactory
+     * @param UserProviderInterface $userProvider
+     */
     public function addAuthenticationFactory(AuthenticationFactoryInterface $authFactory,
                                              UserProviderInterface $userProvider)
     {
@@ -71,21 +179,24 @@ class Firewall
     {
         $this->provider = $provider;
 
-        if ($this->loginpath) {
-            $this->provider->prependFirewallConfig("{$this->name}_login",
-                array('pattern' => "^{$this->loginpath}$"));
+        if ($this->loginPath) {
+            $this->provider->addUnsecurePattern("^{$this->loginPath}$");
         }
 
-        $config = array('logout' => true);
+        $config = array(
+            'logout' => array('logout_path' => $this->logoutPath),
+            'pattern' => implode('|', $this->patterns)
+        );
 
         $app = $this->provider->getApp();
+
         foreach ($this->authFactories as $id => $authFactory) {
             $this->registerAuthenticationFactory($app, $id,
                 $authFactory['factory'], $authFactory['userProvider']);
             $config[$id] = array();
-            if ($this->loginpath) {
-                $config[$id]['login_path'] = $this->loginpath;
-                $config[$id]['check_path'] = $this->logincheck;
+            if ($this->loginPath) {
+                $config[$id]['login_path'] = $this->loginPath;
+                $config[$id]['check_path'] = $this->loginCheckPath;
             }
         }
 
@@ -96,6 +207,13 @@ class Firewall
         $this->provider->appendFirewallConfig($this->name, $config);
     }
 
+    /**
+     * Register authentication factory and user provider.
+     * @param \Silex\Application $app
+     * @param string $id
+     * @param AuthenticationFactoryInterface $authFactory
+     * @param UserProviderInterface $userProvider
+     */
     protected function registerAuthenticationFactory(\Silex\Application $app,
                                                      $id,
                                                      AuthenticationFactoryInterface $authFactory,
@@ -119,9 +237,11 @@ class Firewall
             });
 
             // the authentication listener id
-            $auth_listener       = "security.authentication_listener.$name.$id";
-            $app[$auth_listener] = $app["security.authentication_listener.$type._proto"]($name,
-                $options);
+            $auth_listener = "security.authentication_listener.$name.$type";
+            if (!isset($app[$auth_listener])) {
+                $app[$auth_listener] = $app["security.authentication_listener.$type._proto"]($name,
+                    $options);
+            }
 
             return array($auth_provider, $auth_listener, $entry_point, 'pre_auth');
         });
@@ -163,13 +283,46 @@ class Firewall
     protected function registerEntryPoint(\Silex\Application $app)
     {
         $entry_point       = 'security.entry_point.'.$this->name.
-            (empty($this->loginpath) ? '.http' : '.form');
+            (empty($this->loginPath) ? '.http' : '.form');
         $app[$entry_point] = $app->share(function () use ($app) {
-            return $this->loginpath ?
+            return $this->loginPath ?
                 new FormAuthenticationEntryPoint($app,
-                $app['security.http_utils'], $this->loginpath, false) :
+                $app['security.http_utils'], $this->loginPath, true) :
                 new BasicAuthenticationEntryPoint('Secured');
         });
         return $entry_point;
+    }
+
+    /**
+     * Generate loginCheckPath & logoutPath.
+     */
+    protected function generatePaths()
+    {
+        if ($this->loginPath && !$this->loginCheckPath) {
+            foreach ($this->patterns as $pattern) {
+                // remove the ^ prefix
+                $base = substr($pattern, 1);
+                // skip a regex pattern (naive detection method here)
+                if (strpbrk($base, "[]()^$?")) {
+                    continue;
+                }
+                // now that we found one
+                if (substr($base, -1) != '/') {
+                    $base .= '/';
+                }
+                $this->loginCheckPath = $base.'login_check';
+                $this->logoutPath     = $base.'logout';
+                break;
+            }
+            // unable to generate since all patterns are regex
+            if (!$this->loginCheckPath) {
+                static $underscorePad = 0;
+                $underscorePad++;
+                $this->loginCheckPath = '/'.str_repeat('_', $underscorePad).'login_check';
+                $this->logoutPath     = '/'.str_repeat('_', $underscorePad).'logout';
+                $this->patterns[]     = "^{$this->loginCheckPath}$";
+                $this->patterns[]     = "^{$this->logoutPath}$";
+            }
+        }
     }
 }

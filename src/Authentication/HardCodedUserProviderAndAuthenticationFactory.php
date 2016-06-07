@@ -1,4 +1,15 @@
 <?php
+/**
+ * This file is part of the Securilex library for Silex framework.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Securilex\Authentication
+ * @author Muhammad Lukman Nasaruddin <anatilmizun@gmail.com>
+ * @link https://github.com/MLukman/Securilex Securilex Github
+ * @link https://packagist.org/packages/mlukman/securilex Securilex Packagist
+ */
 
 namespace Securilex\Authentication;
 
@@ -31,6 +42,10 @@ class HardCodedUserProviderAndAuthenticationFactory implements AuthenticationFac
      */
     protected $userProvider;
 
+    /**
+     * Construct an instance.
+     * @staticvar int $instanceId
+     */
     public function __construct()
     {
         static $instanceId  = 0;
@@ -39,7 +54,11 @@ class HardCodedUserProviderAndAuthenticationFactory implements AuthenticationFac
     }
 
     /**
-     * {@inheritdoc}
+     * Create Authentication Provider instance.
+     * @param \Silex\Application $app
+     * @param UserProviderInterface $userProvider
+     * @param string $providerKey
+     * @return SimpleAuthenticationProvider
      */
     public function createAuthenticationProvider(\Silex\Application $app,
                                                  UserProviderInterface $userProvider,
@@ -50,7 +69,8 @@ class HardCodedUserProviderAndAuthenticationFactory implements AuthenticationFac
     }
 
     /**
-     * {@inheritdoc}
+     * Get the unique id of this instance of authentication factory.
+     * @return string
      */
     public function getId()
     {
@@ -103,7 +123,7 @@ class HardCodedUserProviderAndAuthenticationFactory implements AuthenticationFac
      * Attempt to authenticate the provided token using the provided user provider.
      * @param TokenInterface $token
      * @param UserProviderInterface $userProvider
-     * @param type $providerKey
+     * @param string $providerKey
      * @return UsernamePasswordToken
      * @throws BadCredentialsException
      */
@@ -123,7 +143,7 @@ class HardCodedUserProviderAndAuthenticationFactory implements AuthenticationFac
     /**
      * Determine if this instance supports the provided token.
      * @param TokenInterface $token
-     * @param type $providerKey
+     * @param string $providerKey
      * @return type
      */
     public function supportsToken(TokenInterface $token, $providerKey)
