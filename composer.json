@@ -16,6 +16,9 @@
 		"symfony/security": "^3.0",
 		"symfony/ldap": "^3.0"
 	},
+	"suggest": {
+		"mlukman/securilex-doctrine": "For loading users from database using Doctrine ORM"
+	},
 	"autoload": {
 		"psr-4": {
 			"Securilex\\": "src/"

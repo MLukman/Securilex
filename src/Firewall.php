@@ -228,6 +228,9 @@ class Firewall
             // the authentication type
             $type        = (isset($options['login_path']) ? 'form' : 'http');
             $entry_point = "security.entry_point.$name.$type";
+            if ($type == 'form') {
+                $options['failure_forward'] = true;
+            }
 
             // the authentication provider id
             $auth_provider       = "security.authentication_provider.$name.$id";
@@ -302,8 +305,8 @@ class Firewall
             foreach ($this->patterns as $pattern) {
                 // remove the ^ prefix
                 $base = substr($pattern, 1);
-                // skip a regex pattern (naive detection method here)
-                if (strpbrk($base, "[]()^$?")) {
+                // skip a regex pattern
+                if (preg_quote($base) != $base) {
                     continue;
                 }
                 // now that we found one

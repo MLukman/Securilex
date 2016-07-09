@@ -208,6 +208,19 @@ class ServiceProvider extends SecurityServiceProvider
     }
 
     /**
+     * Check if the attributes are granted against the current authentication token and optionally supplied object.
+     * @param mixed $attributes
+     * @param mixed $object
+     * @return bool
+     * @throws AuthenticationCredentialsNotFoundException when the token storage has no authentication token.
+     */
+    public function isGranted($attributes, $object = null)
+    {
+        return $this->app['security.authorization_checker']->isGranted($attributes,
+                $object);
+    }
+
+    /**
      * Get current path relative to base path.
      * @param string $path Path to process. Optional, default to current path
      * @return string
