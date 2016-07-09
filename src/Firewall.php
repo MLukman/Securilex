@@ -80,12 +80,8 @@ class Firewall
      * @param AuthenticationFactoryInterface $authFactory
      * @param UserProviderInterface $userProvider
      * @param string $loginPath
-     * @param string $loginCheckPath
      */
-    public function __construct($patterns,
-                                AuthenticationFactoryInterface $authFactory,
-                                UserProviderInterface $userProvider,
-                                $loginPath = null)
+    public function __construct($patterns, $loginPath = null)
     {
         if (!is_array($patterns)) {
             $patterns = array($patterns);
@@ -101,9 +97,17 @@ class Firewall
 
         // generate paths
         $this->generatePaths();
+    }
 
-        // register authentication factory
-        $this->addAuthenticationFactory($authFactory, $userProvider);
+    /**
+     * Static factory method
+     * @param array|string $patterns
+     * @param string $loginPath
+     * @return self
+     */
+    static public function create($patterns, $loginPath = null)
+    {
+        return new static($patterns, $loginPath);
     }
 
     /**
@@ -152,6 +156,7 @@ class Firewall
      * Add additional authentication factory and corresponding user provider.
      * @param AuthenticationFactoryInterface $authFactory
      * @param UserProviderInterface $userProvider
+     * @return $this Returning $this to allow method chaining
      */
     public function addAuthenticationFactory(AuthenticationFactoryInterface $authFactory,
                                              UserProviderInterface $userProvider)
@@ -169,6 +174,8 @@ class Firewall
             $this->registerAuthenticationFactory($this->provider->getApp(), $id,
                 $authFactory, $userProvider);
         }
+
+        return $this;
     }
 
     /**

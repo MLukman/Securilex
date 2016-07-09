@@ -28,7 +28,7 @@ class SimpleAuthenticationFactory implements AuthenticationFactoryInterface
      * Id of this factory
      * @var string
      */
-    protected $id;
+    protected $id = null;
 
     /**
      * The simple authenticator object
@@ -44,8 +44,6 @@ class SimpleAuthenticationFactory implements AuthenticationFactoryInterface
      */
     public function __construct(SimpleAuthenticatorInterface $simpleAuthenticator)
     {
-        static $instanceId         = 0;
-        $this->id                  = 'simple'.($instanceId++);
         $this->simpleAuthenticator = $simpleAuthenticator;
     }
 
@@ -70,6 +68,10 @@ class SimpleAuthenticationFactory implements AuthenticationFactoryInterface
      */
     public function getId()
     {
+        static $instanceId = 0;
+        if (!$this->id) {
+            $this->id = 'simple'.($instanceId++);
+        }
         return $this->id;
     }
 }

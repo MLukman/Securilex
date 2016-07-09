@@ -29,7 +29,7 @@ class LdapBindAuthenticationFactory implements AuthenticationFactoryInterface
      * Id of this factory
      * @var string
      */
-    protected $id;
+    protected $id = null;
 
     /**
      * The LDAP client object
@@ -55,11 +55,9 @@ class LdapBindAuthenticationFactory implements AuthenticationFactoryInterface
      */
     public function __construct($host, $port, $dnString, $version = 3)
     {
-        static $instanceId = 0;
-        $this->id          = 'ldap'.($instanceId++);
-        $this->ldapClient  = Ldap::create('ext_ldap',
+        $this->ldapClient = Ldap::create('ext_ldap',
                 array('host' => $host, 'port' => $port, 'version' => $version));
-        $this->dnString    = $dnString;
+        $this->dnString   = $dnString;
     }
 
     /**
@@ -84,6 +82,10 @@ class LdapBindAuthenticationFactory implements AuthenticationFactoryInterface
      */
     public function getId()
     {
+        static $instanceId = 0;
+        if (!$this->id) {
+            $this->id = 'ldap'.($instanceId++);
+        }
         return $this->id;
     }
 }

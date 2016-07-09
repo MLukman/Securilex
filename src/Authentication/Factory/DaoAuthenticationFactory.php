@@ -28,7 +28,7 @@ class DaoAuthenticationFactory implements AuthenticationFactoryInterface
      * Id of this factory
      * @var string
      */
-    protected $id;
+    protected $id = null;
 
     /**
      * The encoder factory for encoding passwords
@@ -43,8 +43,6 @@ class DaoAuthenticationFactory implements AuthenticationFactoryInterface
      */
     public function __construct(EncoderFactoryInterface $encoderFactory = null)
     {
-        static $instanceId    = 0;
-        $this->id             = 'dao'.($instanceId++);
         $this->encoderFactory = $encoderFactory;
     }
 
@@ -70,6 +68,10 @@ class DaoAuthenticationFactory implements AuthenticationFactoryInterface
      */
     public function getId()
     {
+        static $instanceId = 0;
+        if (!$this->id) {
+            $this->id = 'dao'.($instanceId++);
+        }
         return $this->id;
     }
 }

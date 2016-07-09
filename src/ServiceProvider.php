@@ -15,6 +15,7 @@ namespace Securilex;
 
 use Silex\Provider\SecurityServiceProvider;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
+use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 
 /**
  * Service Provider is the core class to enable Securilex service in a Silex-powered application.
@@ -22,7 +23,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
  * Example:
  *     $app->register(new \Securilex\ServiceProvider());
  *     $app['securilex']->addFirewall(...);
- * 
+ *
  * Important: Securilex works best if registered after all routes have been defined.
  */
 class ServiceProvider extends SecurityServiceProvider
@@ -76,10 +77,27 @@ class ServiceProvider extends SecurityServiceProvider
         foreach ($this->firewalls as $firewall) {
             $firewall->register($this);
         }
-        $this->refreshFirewallConfig();
 
         // Add reference to this in application instance
         $this->app['securilex'] = $this;
+    }
+
+    /**
+     * Boot with Silex Application
+     * @param \Silex\Application $app
+     */
+    public function boot(\Silex\Application $app)
+    {
+        $i         = 0;
+        $firewalls = array();
+        foreach ($this->unsecuredPatterns as $pattern => $v) {
+            $firewalls['unsecured_'.($i++)] = array('pattern' => $pattern);
+        }
+        $finalConfig = array_merge($firewalls, $this->firewallConfig);
+
+        $app['security.firewalls'] = $finalConfig;
+
+        parent::boot($app);
     }
 
     /**
@@ -92,7 +110,6 @@ class ServiceProvider extends SecurityServiceProvider
 
         if ($this->app) {
             $firewall->register($this);
-            $this->refreshFirewallConfig();
         }
     }
 
@@ -101,8 +118,11 @@ class ServiceProvider extends SecurityServiceProvider
      * @param string $path
      * @return Firewall
      */
-    public function getFirewall($path)
+    public function getFirewall($path = null)
     {
+        if (!$path) {
+            $path = $this->getCurrentPathRelativeToBase();
+        }
         foreach ($this->firewalls as $firewall) {
             if ($firewall->isPathCovered($path)) {
                 return $firewall;
@@ -181,22 +201,6 @@ class ServiceProvider extends SecurityServiceProvider
     }
 
     /**
-     * Refresh and register firewall configuration.
-     */
-    public function refreshFirewallConfig()
-    {
-        if ($this->app) {
-            $i         = 0;
-            $firewalls = array();
-            foreach ($this->unsecuredPatterns as $pattern => $v) {
-                $firewalls['unsecured_'.($i++)] = array('pattern' => $pattern);
-            }
-            $this->app['security.firewalls'] = array_merge($firewalls,
-                $this->firewallConfig);
-        }
-    }
-
-    /**
      * Add additional voter to authorization module.
      * @param VoterInterface $voter
      */
@@ -211,13 +215,22 @@ class ServiceProvider extends SecurityServiceProvider
      * Check if the attributes are granted against the current authentication token and optionally supplied object.
      * @param mixed $attributes
      * @param mixed $object
-     * @return bool
-     * @throws AuthenticationCredentialsNotFoundException when the token storage has no authentication token.
+     * @param boolean $catchException
+     * @return boolean
+     * @throws AuthenticationCredentialsNotFoundException
      */
-    public function isGranted($attributes, $object = null)
+    public function isGranted($attributes, $object = null,
+                              $catchException = true)
     {
-        return $this->app['security.authorization_checker']->isGranted($attributes,
-                $object);
+        try {
+            return $this->app['security.authorization_checker']->isGranted($attributes,
+                    $object);
+        } catch (AuthenticationCredentialsNotFoundException $e) {
+            if ($catchException) {
+                return true;
+            }
+            throw $e;
+        }
     }
 
     /**

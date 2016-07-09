@@ -13,7 +13,6 @@
 
 namespace Securilex\Authentication\Factory;
 
-use Securilex\Authentication\AuthenticationFactoryInterface;
 use Securilex\Authentication\User\MutableUserInterface;
 use Securilex\Authentication\User\MutableUserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Provider\SimpleAuthenticationProvider;
@@ -37,14 +36,13 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  * @see MutableUserProviderInterface
  * @see MutableUserInterface
  */
-class InitializableAuthenticationFactory implements AuthenticationFactoryInterface,
-    SimpleAuthenticatorInterface
+class InitializableAuthenticationFactory extends SimpleAuthenticationFactory implements SimpleAuthenticatorInterface
 {
     /**
      * Id of this factory
      * @var string
      */
-    protected $id;
+    protected $id = null;
 
     /**
      * The initial password
@@ -67,8 +65,7 @@ class InitializableAuthenticationFactory implements AuthenticationFactoryInterfa
     public function __construct(PasswordEncoderInterface $passwordEncoder,
                                 $initPassword = '')
     {
-        static $instanceId     = 0;
-        $this->id              = 'init'.($instanceId++);
+        parent::__construct($this);
         $this->initPassword    = $initPassword;
         $this->passwordEncoder = $passwordEncoder;
     }
@@ -89,8 +86,8 @@ class InitializableAuthenticationFactory implements AuthenticationFactoryInterfa
                 'InitializableAuthenticationFactory expects the user provider to be an instance of MutableUserProviderInterface, received %s instead.',
                 get_class($userProvider)));
         }
-        return new SimpleAuthenticationProvider($this, $userProvider,
-            $providerKey);
+        return parent::createAuthenticationProvider($app, $userProvider,
+                $providerKey);
     }
 
     /**
@@ -99,6 +96,10 @@ class InitializableAuthenticationFactory implements AuthenticationFactoryInterfa
      */
     public function getId()
     {
+        static $instanceId = 0;
+        if (!$this->id) {
+            $this->id = 'init'.($instanceId++);
+        }
         return $this->id;
     }
 
