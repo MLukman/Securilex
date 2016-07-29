@@ -24,7 +24,7 @@ use Symfony\Component\Security\Http\Firewall\ContextListener;
  * Firewall holds configurations on a secured area of your application and
  * the authentication mechanism to allow user to login.
  */
-class Firewall
+class Firewall implements FirewallInterface
 {
     /**
      * The patterns (or simple path) to firewall
@@ -77,8 +77,6 @@ class Firewall
     /**
      * Construct firewall instance.
      * @param array|string $patterns
-     * @param AuthenticationFactoryInterface $authFactory
-     * @param UserProviderInterface $userProvider
      * @param string $loginPath
      */
     public function __construct($patterns, $loginPath = null)

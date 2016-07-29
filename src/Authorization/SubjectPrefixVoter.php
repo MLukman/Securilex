@@ -1,13 +1,37 @@
 <?php
+/**
+ * This file is part of the Securilex library for Silex framework.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Securilex\Authorization
+ * @author Muhammad Lukman Nasaruddin <anatilmizun@gmail.com>
+ * @link https://github.com/MLukman/Securilex Securilex Github
+ * @link https://packagist.org/packages/mlukman/securilex Securilex Packagist
+ */
 
 namespace Securilex\Authorization;
 
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/**
+ * SubjectPrefixVoter is Symfony Voter subclass
+ */
 class SubjectPrefixVoter extends Voter
 {
+    /**
+     * Subject prefixes
+     * @var string[]
+     */
     protected $subjectPrefixes = array();
 
+    /**
+     * Get singleton instance
+     * @staticvar type $instance
+     * @return SubjectPrefixVoter
+     */
     static public function instance()
     {
         static $instance = null;
@@ -17,6 +41,12 @@ class SubjectPrefixVoter extends Voter
         return $instance;
     }
 
+    /**
+     * Add a subject prefix and its allowed role(s)
+     * @param string $subjectPrefix
+     * @param string|array $roles
+     * @return SubjectPrefixVoter
+     */
     public function addSubjectPrefix($subjectPrefix, $roles)
     {
         if (!is_array($roles)) {
@@ -37,13 +67,30 @@ class SubjectPrefixVoter extends Voter
         return $this;
     }
 
+    /**
+     * Determines if the attribute and subject are supported by this voter.
+     *
+     * @param string $attribute An attribute
+     * @param mixed  $subject   The subject to secure, e.g. an object the user wants to access or any other PHP type
+     *
+     * @return bool True if the attribute and subject are supported, false otherwise
+     */
     protected function supports($attribute, $subject)
     {
         return (substr($attribute, 0, 6) == 'prefix');
     }
 
+    /**
+     * Perform a single access check operation on a given attribute, subject and token.
+     *
+     * @param string         $attribute
+     * @param mixed          $subject
+     * @param TokenInterface $token
+     *
+     * @return bool
+     */
     protected function voteOnAttribute($attribute, $subject,
-                                       \Symfony\Component\Security\Core\Authentication\Token\TokenInterface $token)
+                                       TokenInterface $token)
     {
         $granted = true;
         $uroles  = array();

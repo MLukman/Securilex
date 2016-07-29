@@ -30,7 +30,7 @@ class ServiceProvider extends SecurityServiceProvider
 {
     /**
      * The list of added firewalls
-     * @var Firewall[]
+     * @var FirewallInterface[]
      */
     protected $firewalls = array();
 
@@ -102,9 +102,9 @@ class ServiceProvider extends SecurityServiceProvider
 
     /**
      * Add Firewall
-     * @param Firewall $firewall
+     * @param FirewallInterface $firewall
      */
-    public function addFirewall(Firewall $firewall)
+    public function addFirewall(FirewallInterface $firewall)
     {
         $this->firewalls[$firewall->getName()] = $firewall;
 
@@ -114,9 +114,9 @@ class ServiceProvider extends SecurityServiceProvider
     }
 
     /**
-     * Get Firewall with the specific path.
+     * Get the firewall with the specific path.
      * @param string $path
-     * @return Firewall
+     * @return FirewallInterface
      */
     public function getFirewall($path = null)
     {
