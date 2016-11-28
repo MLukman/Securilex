@@ -11,7 +11,7 @@
  * @link https://packagist.org/packages/mlukman/securilex Securilex Packagist
  */
 
-namespace Securilex\Authentication;
+namespace Securilex\Authentication\Factory;
 
 use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;

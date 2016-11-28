@@ -13,7 +13,6 @@
 
 namespace Securilex\Authentication\Factory;
 
-use Securilex\Authentication\AuthenticationFactoryInterface;
 use Symfony\Component\Ldap\Ldap;
 use Symfony\Component\Ldap\LdapInterface;
 use Symfony\Component\Security\Core\Authentication\Provider\LdapBindAuthenticationProvider;

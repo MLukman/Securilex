@@ -13,7 +13,8 @@
 
 namespace Securilex;
 
-use Securilex\Authentication\AuthenticationFactoryInterface;
+use Securilex\Authentication\AuthenticationDriverInterface;
+use Securilex\Authentication\Factory\AuthenticationFactoryInterface;
 use Symfony\Component\Security\Core\User\ChainUserProvider;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\EntryPoint\BasicAuthenticationEntryPoint;
@@ -174,6 +175,16 @@ class Firewall implements FirewallInterface
         }
 
         return $this;
+    }
+
+    /**
+     * Add additional authentication driver that is both authentication factory and user provider.
+     * @param AuthenticationDriverInterface $driver
+     * @return $this Returning $this to allow method chaining
+     */
+    public function addAuthenticationDriver(AuthenticationDriverInterface $driver)
+    {
+        return $this->addAuthenticationFactory($driver, $driver);
     }
 
     /**

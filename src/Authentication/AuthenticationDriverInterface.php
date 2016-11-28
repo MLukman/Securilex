@@ -5,7 +5,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @package Securilex\Authentication
+ * @package Securilex\Authorization
  * @author Muhammad Lukman Nasaruddin <anatilmizun@gmail.com>
  * @link https://github.com/MLukman/Securilex Securilex Github
  * @link https://packagist.org/packages/mlukman/securilex Securilex Packagist
@@ -13,12 +13,13 @@
 
 namespace Securilex\Authentication;
 
+use Securilex\Authentication\Factory\AuthenticationFactoryInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+
 /**
- * HardCodedUserProviderAndAuthenticationFactory combines both Authentication Factory and UserProvider
- * into single instance. Use this class for a simple hard-coded list of users.
- * @deprecated since version 1.2. Use HardCodedAuthenticationDriver instead
+ * AuthenticationDriverInterface extends both AuthenticationFactoryInterface and UserProviderInterface.
  */
-class HardCodedUserProviderAndAuthenticationFactory extends HardCodedAuthenticationDriver
+interface AuthenticationDriverInterface extends AuthenticationFactoryInterface, UserProviderInterface
 {
 
 }

@@ -13,7 +13,6 @@
 
 namespace Securilex\Authentication\Factory;
 
-use Securilex\Authentication\AuthenticationFactoryInterface;
 use Symfony\Component\Security\Core\Authentication\Provider\SimpleAuthenticationProvider;
 use Symfony\Component\Security\Core\Authentication\SimpleAuthenticatorInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;

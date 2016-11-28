@@ -13,7 +13,6 @@
 
 namespace Securilex\Authentication\Factory;
 
-use Securilex\Authentication\AuthenticationFactoryInterface;
 use Symfony\Component\Security\Core\Authentication\Provider\DaoAuthenticationProvider;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
