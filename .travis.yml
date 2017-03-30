@@ -19,4 +19,4 @@ before_script:
   - $(which php) composer.phar install
 
 script:
-  - vendor/bin/phpunit
+  - vendor/bin/phpunit --debug

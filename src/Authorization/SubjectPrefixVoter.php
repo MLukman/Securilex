@@ -58,8 +58,8 @@ class SubjectPrefixVoter extends Voter
             }
         } else {
             if (isset($this->subjectPrefixes[$subjectPrefix])) {
-                $this->subjectPrefixes[$subjectPrefix] = array_merge($this->subjectPrefixes[$subjectPrefix],
-                    $roles);
+                $this->subjectPrefixes[$subjectPrefix] = array_values(array_unique(array_merge(
+                            $this->subjectPrefixes[$subjectPrefix], $roles)));
             } else {
                 $this->subjectPrefixes[$subjectPrefix] = $roles;
             }
@@ -107,5 +107,11 @@ class SubjectPrefixVoter extends Voter
             }
         }
         return $granted;
+    }
+
+    public function getRolesForSubjectPrefix($prefix)
+    {
+        return (isset($this->subjectPrefixes[$prefix]) ?
+            $this->subjectPrefixes[$prefix] : []);
     }
 }
