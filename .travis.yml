@@ -15,8 +15,7 @@ before_install:
   - echo extension = ldap.so >> $INI_FILE
 
 before_script:
-  - curl -s https://getcomposer.org/installer | $(which php)
-  - $(which php) composer.phar install
+  - composer install
 
 script:
   - vendor/bin/phpunit --debug
