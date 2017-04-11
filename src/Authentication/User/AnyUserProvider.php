@@ -22,10 +22,21 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 class AnyUserProvider implements UserProviderInterface
 {
+    protected $roles = array();
+
+    public function __construct($roles = null)
+    {
+        if ($roles) {
+            if (!is_array($roles)) {
+                $roles = array($roles);
+            }
+            $this->roles = array_merge($this->roles, $roles);
+        }
+    }
 
     public function loadUserByUsername($username)
     {
-        return new User($username, $username);
+        return new User($username, $username, $this->roles);
     }
 
     public function refreshUser(UserInterface $user)
