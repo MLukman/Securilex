@@ -25,9 +25,9 @@ interface MutableUserProviderInterface extends UserProviderInterface
 
     /**
      * Save the user.
-     * @param MutableUserInterface $user The user account instance
+     * @param UserInterface $user The user account instance
      */
-    public function saveUser(MutableUserInterface $user);
+    public function saveUser(UserInterface $user);
 
     /**
      * Remove the user.
