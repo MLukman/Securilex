@@ -12,7 +12,7 @@ class SQLite3UserProviderTest extends TestCase
     protected function setUp()
     {
         if (!$this->instance) {
-            $this->instance = new Sqlite3UserProvider(new \SQLite3(':memory:'));
+            $this->instance = new SQLite3UserProvider(new \SQLite3(':memory:'));
         }
     }
 
