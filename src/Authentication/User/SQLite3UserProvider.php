@@ -92,6 +92,10 @@ class SQLite3UserProvider implements MutableUserProviderInterface
         $this->sqlite->close();
     }
 
+    public function createUser($username, $password, $roles) {
+        return new $this->userClass($username, $password, $roles);
+    }
+
     public function loadUserByUsername($username)
     {
         if (!$this->loadQuery) {
@@ -107,7 +111,7 @@ class SQLite3UserProvider implements MutableUserProviderInterface
     protected function userInstanceFromArray($rec)
     {
         $roles = json_decode($rec[$this->defs[3]]) ?: array();
-        return new $this->userClass($rec[$this->defs[1]], $rec[$this->defs[2]], $roles);
+        return $this->createUser($rec[$this->defs[1]], $rec[$this->defs[2]], $roles);
     }
 
     public function refreshUser(UserInterface $user)
@@ -116,7 +120,7 @@ class SQLite3UserProvider implements MutableUserProviderInterface
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_class($user)));
         }
 
-        return new $this->userClass($user->getUsername(), $user->getPassword(), $user->getRoles());
+        return $this->createUser($user->getUsername(), $user->getPassword(), $user->getRoles());
     }
 
     public function removeUser(UserInterface $user)
