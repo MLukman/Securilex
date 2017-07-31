@@ -3,10 +3,13 @@
 namespace Securilex\Authentication\User;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Security\Core\User\User;
 
 class SQLite3UserProviderTest extends TestCase
 {
+    /**
+     *
+     * @var SQLite3UserProvider
+     */
     protected $instance = null;
 
     protected function setUp()
@@ -30,7 +33,8 @@ class SQLite3UserProviderTest extends TestCase
     public function testSaveUser()
     {
         $countBefore = $this->instance->countAll();
-        $this->instance->saveUser(new User('User'.\rand(10000, 99999), 'password'));
+        $user        = $this->instance->createUser('User'.\rand(10000, 99999), 'password');
+        $this->instance->saveUser($user);
         $countAfter  = $this->instance->countAll();
         $this->assertEquals(1, $countAfter - $countBefore);
     }
@@ -40,7 +44,7 @@ class SQLite3UserProviderTest extends TestCase
      */
     public function testLoadUserByUsername()
     {
-        $this->instance->saveUser(new User('User01', 'password'));
+        $this->instance->saveUser($this->instance->createUser('User01', 'password'));
         $user = $this->instance->loadUserByUsername('User01');
         $this->assertEquals('User01', $user->getUsername());
     }
@@ -50,8 +54,8 @@ class SQLite3UserProviderTest extends TestCase
      */
     public function testRefreshUser()
     {
-        $user = new User('User02', 'Password02');
-        $this->assertEquals('User02', $this->instance->refreshUser($user));
+        $user = $this->instance->createUser('User02', 'password');
+        $this->assertEquals('User02', $this->instance->refreshUser($user)->getUsername());
     }
 
     /**
@@ -59,9 +63,9 @@ class SQLite3UserProviderTest extends TestCase
      */
     public function testRemoveUser()
     {
-        $this->instance->saveUser(new User('User01', 'password'));
+        $this->instance->saveUser($this->instance->createUser('User01', 'password'));
         $countBefore = $this->instance->countAll();
-        $this->instance->removeUser(new User('User01', 'password'));
+        $this->instance->removeUser($this->instance->createUser('User01', 'password'));
         $countAfter  = $this->instance->countAll();
         $this->assertEquals(-1, $countAfter - $countBefore);
     }

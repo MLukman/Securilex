@@ -92,7 +92,8 @@ class SQLite3UserProvider implements MutableUserProviderInterface
         $this->sqlite->close();
     }
 
-    public function createUser($username, $password, $roles)
+    public function createUser($username, $password = null,
+                               array $roles = array())
     {
         return new $this->userClass($username, $password, $roles);
     }
