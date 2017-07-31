@@ -66,8 +66,7 @@ class SecurityServiceProvider extends \Silex\Provider\SecurityServiceProvider
         parent::register($app);
 
         // Register voters
-        $app->extend('security.voters',
-            function($voters) {
+        $app->extend('security.voters', function($voters) {
             return array_merge($voters, $this->voters);
         });
 
@@ -222,8 +221,7 @@ class SecurityServiceProvider extends \Silex\Provider\SecurityServiceProvider
                               $catchException = true)
     {
         try {
-            return $this->app['security.authorization_checker']->isGranted($attributes,
-                    $object);
+            return $this->app['security.authorization_checker']->isGranted($attributes, $object);
         } catch (AuthenticationCredentialsNotFoundException $e) {
             if ($catchException) {
                 return true;

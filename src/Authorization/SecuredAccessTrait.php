@@ -54,10 +54,25 @@ trait SecuredAccessTrait
      */
     public function isRoleAllowed($role, $attribute = 'access')
     {
-        $roleStr = (string) $role;
-        $attrStr = (string) $attribute;
-        return (isset($this->allowedRoles[$roleStr]) && isset($this->allowedRoles[$roleStr][$attrStr]))
-                ? $this->allowedRoles[$roleStr][$attrStr] : false;
+        if (is_array($role)) {
+            foreach ($role as $r) {
+                if ($this->isRoleAllowed($r, $attribute)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            $roleStr = (string) $role;
+            $attrStr = (string) $attribute;
+            if (isset($this->allowedRoles[$roleStr])) {
+                return
+                    (isset($this->allowedRoles[$roleStr][$attrStr]) ?
+                    $this->allowedRoles[$roleStr][$attrStr] : false) ||
+                    (isset($this->allowedRoles[$roleStr]['any']) ?
+                    $this->allowedRoles[$roleStr]['any'] : false);
+            }
+            return false;
+        }
     }
 
     /**

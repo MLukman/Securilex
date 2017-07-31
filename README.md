@@ -1,7 +1,10 @@
 # Securilex
+
+[![Packagist Version](https://img.shields.io/packagist/v/mlukman/securilex.svg)](https://packagist.org/packages/mlukman/securilex) [![Build Status](https://travis-ci.org/MLukman/Securilex.svg?branch=master)](https://travis-ci.org/MLukman/Securilex)
+
 Securilex is a simplified security provider for Silex.
 
-The main class for Securilex is `\Securilex\ServiceProvider`.
+The main class for Securilex is `\Securilex\SecurityServiceProvider`.
 
 Usage:
 

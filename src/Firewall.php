@@ -170,8 +170,7 @@ class Firewall implements FirewallInterface
         $this->userProviders[] = $userProvider;
 
         if ($this->provider) {
-            $this->registerAuthenticationFactory($this->provider->getApp(), $id,
-                $authFactory, $userProvider);
+            $this->registerAuthenticationFactory($this->provider->getApp(), $id, $authFactory, $userProvider);
         }
 
         return $this;
@@ -207,8 +206,7 @@ class Firewall implements FirewallInterface
         $app = $this->provider->getApp();
 
         foreach ($this->authFactories as $id => $authFactory) {
-            $this->registerAuthenticationFactory($app, $id,
-                $authFactory['factory'], $authFactory['userProvider']);
+            $this->registerAuthenticationFactory($app, $id, $authFactory['factory'], $authFactory['userProvider']);
             $config[$id] = array();
             if ($this->loginPath) {
                 $config[$id]['login_path'] = $this->loginPath;
@@ -251,15 +249,13 @@ class Firewall implements FirewallInterface
             // the authentication provider id
             $auth_provider       = "security.authentication_provider.$name.$id";
             $app[$auth_provider] = $app->share(function () use ($app, $name, $authFactory, $userProvider) {
-                return $authFactory->createAuthenticationProvider($app,
-                        $userProvider, $name);
+                return $authFactory->createAuthenticationProvider($app, $userProvider, $name);
             });
 
             // the authentication listener id
             $auth_listener = "security.authentication_listener.$name.$type";
             if (!isset($app[$auth_listener])) {
-                $app[$auth_listener] = $app["security.authentication_listener.$type._proto"]($name,
-                    $options);
+                $app[$auth_listener] = $app["security.authentication_listener.$type._proto"]($name, $options);
             }
 
             return array($auth_provider, $auth_listener, $entry_point, 'pre_auth');
@@ -288,8 +284,7 @@ class Firewall implements FirewallInterface
         $context_listener       = 'security.context_listener.'.$this->name;
         $app[$context_listener] = $app->share(function () use ($app) {
             return new ContextListener(
-                $app['security.token_storage'], $this->userProviders,
-                $this->name, $app['logger'], $app['dispatcher']
+                $app['security.token_storage'], $this->userProviders, $this->name, $app['logger'], $app['dispatcher']
             );
         });
         return $context_listener;
@@ -305,8 +300,8 @@ class Firewall implements FirewallInterface
             (empty($this->loginPath) ? '.http' : '.form');
         $app[$entry_point] = $app->share(function () use ($app) {
             return $this->loginPath ?
-                new FormAuthenticationEntryPoint($app,
-                $app['security.http_utils'], $this->loginPath, true) :
+                new FormAuthenticationEntryPoint($app, $app['security.http_utils'], $this->loginPath, true)
+                    :
                 new BasicAuthenticationEntryPoint('Secured');
         });
         return $entry_point;

@@ -57,8 +57,7 @@ class SimpleAuthenticationFactory implements AuthenticationFactoryInterface
                                                  UserProviderInterface $userProvider,
                                                  $providerKey)
     {
-        return new SimpleAuthenticationProvider($this->simpleAuthenticator,
-            $userProvider, $providerKey);
+        return new SimpleAuthenticationProvider($this->simpleAuthenticator, $userProvider, $providerKey);
     }
 
     /**

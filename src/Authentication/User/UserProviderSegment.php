@@ -60,8 +60,7 @@ class UserProviderSegment implements UserProviderInterface
         if (call_user_func($this->filter, $user)) {
             return $user;
         }
-        throw new UsernameNotFoundException(sprintf('Username "%s" does not exist.',
-            $username));
+        throw new UsernameNotFoundException(sprintf('Username "%s" does not exist.', $username));
     }
 
     /**

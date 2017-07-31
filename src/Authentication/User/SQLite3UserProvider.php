@@ -62,7 +62,7 @@ class SQLite3UserProvider implements MutableUserProviderInterface
      *
      * @var string
      */
-    protected $userClass = '\Symfony\Component\Security\Core\User\User';
+    protected $userClass = '\Securilex\Authentication\User\SimpleMutableUser';
 
     /**
      *
@@ -92,18 +92,22 @@ class SQLite3UserProvider implements MutableUserProviderInterface
         $this->sqlite->close();
     }
 
-    public function createUser($username, $password, $roles) {
+    public function createUser($username, $password, $roles)
+    {
         return new $this->userClass($username, $password, $roles);
     }
 
-    public function loadUserByUsername($username)
+    public function loadUserByUsername($username, $exception_if_not_found = true)
     {
         if (!$this->loadQuery) {
             $this->loadQuery = $this->sqlite->prepare("SELECT {$this->defs[1]}, {$this->defs[2]}, {$this->defs[3]} FROM {$this->defs[0]} WHERE {$this->defs[1]} = :username");
         }
         $this->loadQuery->bindValue(':username', $username);
         if (!($result = $this->loadQuery->execute()->fetchArray())) {
-            throw new UsernameNotFoundException(sprintf('Username "%s" does not exist.', $username));
+            if ($exception_if_not_found) {
+                throw new UsernameNotFoundException(sprintf('Username "%s" does not exist.', $username));
+            }
+            return null;
         }
         return $this->userInstanceFromArray($result);
     }
