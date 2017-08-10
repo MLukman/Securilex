@@ -224,7 +224,7 @@ class SecurityServiceProvider extends \Silex\Provider\SecurityServiceProvider
             return $this->app['security.authorization_checker']->isGranted($attributes, $object);
         } catch (AuthenticationCredentialsNotFoundException $e) {
             if ($catchException) {
-                return true;
+                return false;
             }
             throw $e;
         }
