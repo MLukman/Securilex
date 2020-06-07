@@ -1,6 +1,6 @@
 {
 	"name": "mlukman/securilex",
-	"license": "GPL",
+	"license": "LGPL-2.0-only",
 	"description": "Securilex is a simplified security provider for Silex.",
 	"keywords": ["silex", "security", "securilex"],
 	"homepage": "https://github.com/MLukman/Securilex",

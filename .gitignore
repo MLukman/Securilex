@@ -1,3 +1,5 @@
 /nbproject/
 /vendor/
-composer.lock
+/composer.lock
+/docs/phpdoc-cache-*
+/docs/
